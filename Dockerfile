@@ -1,11 +1,9 @@
-FROM golang:1.8
-
+FROM golang:1.12 as build
 WORKDIR /go/src/app
 COPY . .
-
-RUN go-wrapper download   # "go get -d -v ./..."
-RUN go-wrapper install    # "go install -v ./..."
-
-EXPOSE 4321
-
-CMD ["go-wrapper", "run"] # ["app"]
+ENV GO111MODULE on
+RUN go build -v -o /app .
+# Now copy it into our base image.
+FROM gcr.io/distroless/base
+COPY --from=build /app /app
+CMD ["/app"]
